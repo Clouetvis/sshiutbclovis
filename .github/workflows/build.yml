@@ -20,7 +20,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Install TeXLive and Pygments
         run: |
@@ -34,7 +34,7 @@ jobs:
             texlive-fonts-extra \
             texlive-lang-french \
             python3-pygments
-          pygmentize --version
+          pygmentize -V
 
       - name: Verify the document is self-contained
         run: |
@@ -64,7 +64,7 @@ jobs:
           echo "Compilation sans erreur fatale."
 
       - name: Upload the compiled PDF
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ssh-indep-pdf
           path: ssh-indep.pdf
