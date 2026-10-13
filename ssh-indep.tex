@@ -1,0 +1,1348 @@
+% !TEX root = ssh-indep.tex
+% ssh-indep.tex - version autonome du TP SSH
+% Preambule inline (copie de ../../inc/encommun.tex) : aucune dependance externe,
+% le fichier se compile seul (latexmk -pdf -shell-escape ssh-indep.tex), n'importe ou.
+% doc sur la class exam
+% http://fr.wikibooks.org/wiki/LaTeX/LaTeX_pour_enseignants
+% http://agregationchimie.free.fr/exam.php
+
+
+%QUESTIONS ET REPONSES
+
+\documentclass[a4paper,10pt]{exam}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+
+
+\frenchsetup{AutoSpacePunctuation=false}
+\usepackage{graphicx}
+
+\author{Pouchoulon}
+
+%recodage numerotation \part
+\renewcommand{\partlabel}{\thepartno}
+
+\newcommand{\iconetext}[1]{
+\begin{array}{c}
+\includegraphics{#1}
+\end{array}}
+
+\newcommand{\jmp}{Jean-Marc Pouchoulon}
+\graphicspath{{../../images/}}
+
+%coloration de code
+
+\usepackage[table,xcdraw]{xcolor}
+\usepackage{listings}
+
+
+\definecolor{mygreen}{rgb}{0,0.6,0}
+\definecolor{mygray}{rgb}{0.5,0.5,0.5}
+\definecolor{mymauve}{rgb}{0.58,0,0.82}
+\definecolor{mygreen}{rgb}{0,0.6,0}
+\definecolor{mygrey}{rgb}{0.5,0.5,0.5}
+\definecolor{mymauve}{rgb}{0.58,0,0.82}
+\definecolor{carolinablue}{rgb}{0.6, 0.73, 0.89}
+\definecolor{vertpomme}{rgb}{0.66, 0.89, 0.63}
+\definecolor{jaune}{rgb}{0.91, 0.84, 0.42}
+\definecolor{cerise}{rgb}{0.96, 0.0, 0.63}
+\definecolor{bg}{rgb}{0.85,0.85,0.85}
+\lstset{ %
+  backgroundcolor=\color{white},   % choose the background color; you must add \usepackage{color} or \usepackage{xcolor}
+  basicstyle=\footnotesize,        % the size of the fonts that are used for the code
+  breakatwhitespace=false,         % sets if automatic breaks should only happen at whitespace
+  breaklines=true,                 % sets automatic line breaking
+  captionpos=b,                    % sets the caption-position to bottom
+  commentstyle=\color{mygreen},    % comment style
+  deletekeywords={...},            % if you want to delete keywords from the given language
+  escapeinside={\%*}{*)},          % if you want to add LaTeX within your code
+  extendedchars=true,              % lets you use non-ASCII characters; for 8-bits encodings only, does not work with UTF-8
+  frame=single,                    % adds a frame around the code
+  keepspaces=true,                 % keeps spaces in text, useful for keeping indentation of code (possibly needs columns=flexible)
+  keywordstyle=\color{blue},       % keyword style
+  language=Octave,                 % the language of the code
+  morekeywords={*,...},            % if you want to add more keywords to the set
+  numbers=left,                    % where to put the line-numbers; possible values are (none, left, right)
+  numbersep=5pt,                   % how far the line-numbers are from the code
+  numberstyle=\tiny\color{mygray}, % the style that is used for the line-numbers
+  rulecolor=\color{black},         % if not set, the frame-color may be changed on line-breaks within not-black text (e.g. comments (green here))
+  showspaces=false,                % show spaces everywhere adding particular underscores; it overrides 'showstringspaces'
+  showstringspaces=false,          % underline spaces within strings only
+  showtabs=false,                  % show tabs within strings adding particular underscores
+  stepnumber=2,                    % the step between two line-numbers. If it's 1, each line will be numbered
+  stringstyle=\color{mymauve},     % string literal style
+  tabsize=2,                       % sets default tabsize to 2 spaces
+  title=\lstname                   % show the filename of files included with \lstinputlisting; also try caption instead of title
+  }
+
+% eviter les boites rouges dans pygmentize quand le parser détecte un problème
+
+%\usemintedstyle{xcode}
+%\usemintedstyle{solarized-dark}
+%\usemintedstyle{colorful}
+%\usemintedstyle{autumn}
+%\usepackage{fancyhdr}
+
+
+% Éviter les carrés rouges
+\usepackage[hyperfootnotes=false]{hyperref}
+\usepackage{minted2}
+\newminted{docker}{
+    linenos=false,
+    bgcolor=bg,
+    baselinestretch=1.2, 
+    frame=none,
+    framesep=10pt,
+    %    tabsize=4,
+    %  gobble=8,
+    fontfamily=helvetica,
+    fontsize=\footnotesize,
+}
+\newminted{ldif}{
+    linenos=false,
+    bgcolor=bg,
+    baselinestretch=1.2, 
+    frame=none,
+    framesep=10pt,
+    %    tabsize=4,
+    %  gobble=8,
+    fontfamily=helvetica,
+    fontsize=\footnotesize,
+}
+
+\newminted{yaml}{
+    linenos=false,
+    bgcolor=bg,
+    baselinestretch=1.2, 
+    frame=none,
+    framesep=10pt,
+    showtabs=false,
+    %    tabsize=4,
+    %  gobble=8,
+    fontfamily=helvetica,
+    fontsize=\footnotesize,
+}
+
+\newminted{bash}{
+    linenos=false,
+    bgcolor=bg,
+    baselinestretch=1.2, 
+    frame=none,
+    framesep=10pt,
+    %    tabsize=4,
+    %  gobble=8,
+    fontfamily=helvetica,
+    fontsize=\footnotesize,
+}
+
+
+\newminted{basht}{
+    linenos=false,
+    bgcolor=bg,
+    baselinestretch=1.2, 
+    frame=none,
+    framesep=10pt,
+    %    tabsize=4,
+    %  gobble=8,
+    fontfamily=helvetica,
+    fontsize=\tiny,
+}
+\newminted{bashg}{
+    linenos=false,
+    bgcolor=bg,
+    baselinestretch=1.2, 
+    frame=none,
+    framesep=10pt,
+    %    tabsize=4,
+    %  gobble=8,
+    fontfamily=helvetica,
+    fontsize=\footnotesize,
+}
+
+\newminted{json}{
+    linenos=false,
+    bgcolor=bg,
+    baselinestretch=1.2, 
+    frame=none,
+    framesep=10pt,
+    %    tabsize=4,
+    %  gobble=8,
+    fontfamily=helvetica,
+    fontsize=\tiny,
+}
+
+\newminted{text}{
+    linenos=false,
+    baselinestretch=1.2, 
+    %    bgcolor=bg,
+    %    frame=none,
+    %    framesep=10pt,
+    %    tabsize=4,
+    %  gobble=8,
+    fontfamily=helvetica,
+   % fontsize=\tiny,
+}
+
+
+\newminted{powershell}{
+    breaklines=true, 
+    linenos=false,
+    bgcolor=bg,
+    baselinestretch=1.2, 
+    frame=none,
+    framesep=10pt,
+    %    tabsize=4,
+    %  gobble=8,
+    fontfamily=helvetica,
+    fontsize=\footnotesize,
+}
+
+
+\newminted{powershellsession}{
+    linenos=false,
+    bgcolor=bg,
+    baselinestretch=1.2, 
+    frame=none,
+    framesep=10pt,
+    %    tabsize=4,
+    %  gobble=8,
+    fontfamily=helvetica,
+    fontsize=\footnotesize,
+}
+\newminted{batch}{
+    linenos=false,
+    breaklines=true, 
+    bgcolor=bg,
+    baselinestretch=1.2, 
+    frame=none,
+    framesep=10pt,
+    %    tabsize=4,
+    %  gobble=8,
+    fontfamily=helvetica,
+    fontsize=\footnotesize,
+}
+\newminted{ini}{
+    linenos=false,
+    breaklines=true, 
+    bgcolor=bg,
+    baselinestretch=1.2, 
+    frame=none,
+    framesep=10pt,
+    %    tabsize=4,
+    %  gobble=8,
+    fontfamily=helvetica,
+    fontsize=\footnotesize,
+}
+\newminted{python}{	
+    breaklines=true,
+    linenos=true,
+    bgcolor=bg,
+    baselinestretch=1.2, 
+    frame=none,
+    framesep=10pt,
+    %    tabsize=4,
+    %  gobble=8,
+    fontfamily=helvetica,
+    fontsize=\footnotesize,
+}
+\newminted{ansible-output}{	
+    breaklines=true,
+    linenos=true,
+    bgcolor=bg,
+    baselinestretch=1.2, 
+    frame=none,
+    framesep=10pt,
+    %    tabsize=4,
+    %  gobble=8,
+    fontfamily=helvetica,
+    fontsize=\footnotesize,
+}
+\newminted{jinja}{	
+    breaklines=true,
+    linenos=true,
+    bgcolor=bg,
+    baselinestretch=1.2, 
+    frame=none,
+    framesep=10pt,
+    %    tabsize=4,
+    %  gobble=8,
+    fontfamily=helvetica,
+    fontsize=\footnotesize,
+}
+\newminted{toml}{
+	linenos=false,
+	baselinestretch=1.2, 
+	%    bgcolor=bg,
+	%    frame=none,
+	%    framesep=10pt,
+	%    tabsize=4,
+	%  gobble=8,
+	fontfamily=helvetica,
+%	fontsize=\tiny,
+}
+
+\newminted{js}{
+    linenos=false,
+    bgcolor=white,
+    bgcolor=bg,
+    baselinestretch=1.2, 
+    frame=none,
+    framesep=10pt,
+%    tabsize=4,
+%  gobble=8,
+    fontfamily=helvetica,
+    fontsize=\footnotesize,
+}
+\newminted{terraform}{
+    linenos=false,
+    bgcolor=white,
+    bgcolor=bg,
+    baselinestretch=1.2, 
+    frame=none,
+    framesep=10pt,
+%    tabsize=4,
+%  gobble=8,
+    fontfamily=helvetica,
+    fontsize=\footnotesize,
+}
+\newminted{ios}{
+    linenos=false,
+    bgcolor=white,
+    bgcolor=bg,
+    baselinestretch=1.2, 
+    frame=none,
+    framesep=10pt,
+%    tabsize=4,
+%  gobble=8,
+    fontfamily=helvetica,
+    fontsize=\footnotesize,
+}
+\newminted{text2}{
+    linenos=false,
+    baselinestretch=1.2, 
+%    bgcolor=bg,
+%    frame=none,
+%    framesep=10pt,
+%    tabsize=4,
+%  gobble=8,
+    fontfamily=helvetica,
+%    fontsize=\tiny,
+}
+%\usemintedstyle{murphy}
+\usepackage{enumitem}
+
+\usemintedstyle{tango}
+\author{Jean-Marc Pouchoulon}
+%\author{\IEEEauthorblockN{Jean-Marc Pouchoulon}
+%\IEEEauthorblockA{Département Réseaux et Télécoms\\
+%IUT Béziers\\
+%Université de Montpellier\\
+%Email: jean-marc.pouchoulon@iutbeziers.fr}}
+
+% pour afficher ( ou pas) les réponses dans le document
+%\printanswers
+
+\usepackage{parskip}
+
+\usepackage{microtype}
+\DisableLigatures{encoding = *, family = * } % Désactive toutes les ligatures
+% no red boxes on parser error:
+\makeatletter
+\expandafter\def\csname PYGdefault@tok@err\endcsname{\def\PYGdefault@bc##1{{\strut ##1}}}
+\makeatother
+
+\title{TP R202 : SSH --- TIPS \& TRICKS\\{\small clés, agent, bastion, tunnels, multiplexage}}
+
+\date{Octobre 2026}
+%%\author{Jean-Marc Pouchoulon}
+
+% pour afficher (ou pas) les réponses dans le document
+\printanswers
+\noprintanswers
+
+\graphicspath{{./images/}}
+
+
+\begin{document}
+\maketitle
+
+\section{Objectifs}
+
+\textbf{SSH} (Secure SHell) est le protocole de communication chiffrée le plus utilisé pour
+administrer des serveurs à distance. Au-delà du simple \texttt{ssh serveur}, il regorge de
+fonctionnalités qui, une fois maîtrisées, changent radicalement l'efficacité d'un administrateur :
+authentification par clés, tunnels, connexions par saut, multiplexage.
+
+À la fin de ce TP, vous devez être capable de :
+\begin{itemize}
+  \item générer, déployer, révoquer des clés \textbf{ed25519} et comprendre les permissions exigées ;
+  \item utiliser un \textbf{agent SSH} (Linux et Windows) et expliquer le piège du \texttt{ForwardAgent} ;
+  \item écrire un \texttt{\textasciitilde/.ssh/config} qui supprime toute option tapée en ligne de commande ;
+  \item se connecter à un serveur interne \textbf{via un bastion} avec \texttt{ProxyJump} ;
+  \item ouvrir des tunnels \texttt{-L}, \texttt{-R} et \texttt{-D} et savoir précisément \emph{qui écoute où} ;
+  \item activer le \textbf{multiplexage} \texttt{ControlMaster} et mesurer son impact ;
+  \item déboguer une connexion : \texttt{-v}, \texttt{known\_hosts}, \texttt{StrictHostKeyChecking}.
+\end{itemize}
+Vous aurer besoin de deux VMs : un bastion (exposé sur le port 2222) 
+et une cible (accessible uniquement depuis le bastion).
+
+\section{Clés : bien faire les choses dès le départ}
+
+L'authentification par clé repose sur un pair asymétrique : la clé privée reste sur votre poste,
+la clé publique est déposée dans \texttt{\textasciitilde/.ssh/authorized\_keys} du serveur.
+Depuis OpenSSH 6.5 (2014), l'algorithme recommandé est \textbf{Ed25519} (RFC 8032) :
+courbes elliptiques, clé de 256~bits, aussi sûre qu'une RSA 3072, plus courte, plus rapide,
+et sans paramètre à « bien choisir » comme la taille d'une RSA.
+
+\begin{questions}
+\question Générez sur votre poste une paire de clés ed25519 avec le commentaire
+\texttt{"prenom.nom@poste"} et une phrase de passe. Quels fichiers sont créés ?
+Quelles permissions portent-ils, et pourquoi cette différence ?
+\begin{solution}
+\begin{bashcode}
+cd ~/.ssh
+ssh-keygen -t ed25519 -C "prenom.nom@poste"
+# -f permet de choisir le nom de fichier (sinon id_ed25519)
+# -N "" supprime la phrase de passe (à éviter !)
+ls -l id_ed25519 id_ed25519.pub
+# -rw------- 1 ... id_ed25519      (600 : privée, lisible par son propriétaire seul)
+# -rw-r--r-- 1 ... id_ed25519.pub  (644 : publique, partageable librement)
+\end{bashcode}
+Le \texttt{.pub} n'a \emph{rien} de secret : c'est lui que l'on dépose sur les serveurs.
+La clé privée est chiffrée avec votre phrase de passe ; une permission 644 sur la clé privée
+provoque un refus immédiat de la part du client (voir question suivante).
+\end{solution}
+\question Affichez l'empreinte (fingerprint) de la clé avec \texttt{ssh-keygen -lf}.
+Que représente cette empreinte ? Pourquoi est-elle utile lors d'un audit d'un
+\texttt{authorized\_keys} sur un serveur ?
+\begin{solution}
+\begin{bashcode}
+ssh-keygen -lf id_ed25519.pub
+# 256 SHA256:abcdEFGH... prenom.nom@poste (ED25519)
+ssh-keygen -lf id_ed25519     # marche aussi sur la clé privée
+\end{bashcode}
+C'est le SHA-256 de la clé publique : court, stable, unique. Sur un serveur où
+\texttt{authorized\_keys} compte des dizaines de clés opaques, le fingerprint permet
+d'identifier \emph{qui} a accès sans avoir à recoller les clés deux par deux, et de
+cross-checker la clé réellement déployée avec celle de l'émetteur (empreinte annoncée
+par un canal séparé).
+\end{solution}
+\question Que fait \texttt{ssh-keygen -y -f id\_ed25519} ? En quoi est-ce une astuce
+de vérification ?
+\begin{solution}
+\begin{bashcode}
+ssh-keygen -y -f id_ed25519        # redérive la publique depuis la privée
+ssh-keygen -y -f id_ed25519 | diff - <(cut -d' ' -f1-2 id_ed25519.pub) && echo CONFORME
+\end{bashcode}
+On peut donc vérifier, côté client, qu'une ligne d'un \texttt{authorized\_keys}
+loin (récupérée par \texttt{cat}) correspond bien à \emph{votre} clé privée, sans
+confiance dans l'affichage de la clé publique seule.
+\end{solution}
+\question Déployez la clé sur le bastion. D'abord avec l'outil dédié, puis décrivez la
+méthode manuelle. Quelles permissions exactes \texttt{sshd} exige-t-il sur
+\texttt{\textasciitilde}, \texttt{\textasciitilde/.ssh} et \texttt{authorized\_keys}
+(option \texttt{StrictModes}, activée par défaut) ?
+\begin{solution}
+\begin{bashcode}
+# depuis l'hôte (mot de passe la dernière fois) :
+ssh-copy-id -p 2222 root@127.0.0.1
+# méthode manuelle :
+cat ~/.ssh/id_ed25519.pub | ssh -p 2222 root@127.0.0.1 \
+  'mkdir -p ~/.ssh && cat >> ~/.ssh/authorized_keys && chmod 700 ~/.ssh && chmod 600 ~/.ssh/authorized_keys'
+ssh -p 2222 root@127.0.0.1   # plus de mot de passe demandé
+\end{bashcode}
+Avec \texttt{StrictModes yes} (défaut), \texttt{sshd} refuse l'authentification par clé si
+le \texttt{home}, \texttt{~/.ssh} ou \texttt{authorized\_keys} sont \emph{group/world}
+écrivables ou non possédés par l'utilisateur (700/600 attendus ; 644 toléré sur
+\texttt{authorized\_keys}, 600 recommandé).
+\end{solution}
+\question Piège : faites \texttt{chmod 644} sur votre clé privée, puis essayez de vous connecter.
+Que répond le client ? Pourquoi le \emph{client} (et non le serveur) refuse-t-il ?
+\begin{solution}
+\begin{bashcode}
+chmod 644 ~/.ssh/id_ed25519
+ssh -p 2222 root@127.0.0.1
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+# @         UNPROTECTED PRIVATE KEY FILE!          @
+# ...
+# Bad permissions. Private key should be readable
+#     only by you.
+# Permission denied (publickey).
+chmod 600 ~/.ssh/id_ed25519   # la remise en état
+\end{bashcode}
+Le client applique ce contrôle \emph{avant même de charger} la clé : la clé privée est
+chiffrée avec la phrase de passe, mais le client ne veut pas \emph{demander} la phrase de
+passe si d'autres utilisateurs de la machine peuvent lire le fichier (la phrase de passe
+saisie en clair sur le terminal serait alors utilisée pour décrypter une clé lisible par
+n'importe qui). C'est une défense en profondeur côté client, indépendante du serveur.
+\end{solution}
+\question Générez une \emph{seconde} clé, \texttt{id\_ed25519\_cible}, qui ne sera déposée
+\textbf{que} sur la cible. Quel option permet de préciser quelle clé présenter ?
+Pourquoi la « une clé par contexte » est-elle une bonne hygiène ?
+\begin{solution}
+\begin{bashcode}
+ssh-keygen -t ed25519 -f ~/.ssh/id_ed25519_cible -C "prenom.nom@poste-pour-cible"
+ssh -i ~/.ssh/id_ed25519_cible ...    # sur la ligne de commande
+IdentityFile ~/.ssh/id_ed25519_cible  # dans le config (section suivante)
+\end{bashcode}
+Avantages : la révocation est chirurgicale (on retire une ligne d'un
+\texttt{authorized\_keys} sans impacter les autres accès) ; l'audit de journal montre
+quelle clé a été utilisée ; une clé perdue/compromis ne donne accès qu'à un périmètre ;
+on peut même utiliser des algorithmes ou durées de vie différents selon le contexte.
+\end{solution}
+\question Un stagiaire a quitté le service : sa clé est encore dans
+\texttt{authorized\_keys} du bastion. Révoquez-la et montrez dans les journaux du bastion
+comment identifier quelle clé un utilisateur vient d'utiliser pour se connecter.
+\begin{solution}
+\begin{bashcode}
+# sur le bastion :
+nano ~/.ssh/authorized_keys     # retirer la ligne correspondante (vérifier le fingerprint avant !)
+# puis vérifier dans les journaux :
+journalctl -u ssh | grep -i "accepted"
+# Sep 29 10:12:03 bastion sshd[1234]: Accepted publickey for root
+#   (ED25519 SHA256:abcdEFGH...) from 10.99.0.1 port 52344 ssh2:
+#   RSA SHA256:...             <- la clé du client
+#   ED25519 SHA256:abcdEFGH... <- la clé acceptée, à croiser avec ssh-keygen -lf
+\end{bashcode}
+La révocation d'une clé SSH se fait \emph{à la main} (pas de CRL) : retirer la ligne de
+\texttt{authorized\_keys} est l'opération. D'où l'intérêt des commentaires lisibles et
+des fingerprints.
+\end{solution}
+\question Comparez : générez une RSA 3072 et mesurez la taille des fichiers par rapport à
+votre ed25519. En déduisez un argument taille/sécurité à transmettre à un collègue
+qui « fait du RSA 4096 pour être plus sûr ».
+\begin{solution}
+\begin{bashcode}
+ssh-keygen -t rsa -b 3072 -f ~/.ssh/id_rsa_test -N "" -q
+ls -l id_ed25519 id_rsa_test
+# id_ed25519  ~400 octets   id_rsa_test ~2600 octets
+\end{bashcode}
+Ed25519 offre un niveau de sécurité équivalent à RSA 3072 pour une clé 6 fois plus
+petite, une signature plus rapide, et sans choix de paramètre (pas de « 2048 suffit ?
+non, 3072 ? 4096 ? »). RSA 4096 n'est « plus sûr » que ed25519 que de très peu, au prix
+de 10 fois le poids.
+\end{solution}
+\question Que fait \texttt{ssh-keyscan} ? À quoi sert-il dans l'automatisation, et quelle
+est la limite \textbf{sécurité} fondamentale à connaître avant de l'utiliser ?
+\begin{solution}
+\begin{bashcode}
+# pré-peupler known_hosts d'une flotte (ex. avant un run d'automatisation) :
+ssh-keyscan -t ed25519 -p 2222 127.0.0.1 >> ~/.ssh/known_hosts
+ssh-keyscan -f serveurs.txt          # une IP/hostname par ligne
+\end{bashcode}
+Il récupère les clés \emph{publiques de hôte} sans s'authentifier. Limite fondamentale :
+il ne fournit \textbf{aucune authentification} du serveur — sur le premier contact, un
+MITM peut répondre avec \emph{sa} clé, qui sera alors enregistrée comme bonne.
+À n'utiliser qu'après vérification de l'empreinte par un canal de confiance
+(out-of-band), ou en environnement maîtrisé.
+\end{solution}
+\end{questions}
+
+\section{L'agent : la phrase de passe, une seule fois}
+
+\texttt{ssh-agent} est un démon qui conserve vos clés privées \emph{déjà déverrouillées} en
+mémoire. Une fois la phrase de passe saisie, toutes les connexions (et les scripts qui
+lancent \texttt{ssh}/\texttt{scp}/\texttt{rsync}/\texttt{git} en local) se reconnectent sans
+y repenser.
+
+\begin{questions}
+\question Que fait exactement \texttt{ssh-add} ? Quelles variables d'environnement relient
+votre session à l'agent ?
+\begin{solution}
+\begin{bashcode}
+echo $SSH_AUTH_SOCK $SSH_AGENT_PID
+ssh-add                    # demande la phrase de passe, charge la clé
+ssh -p 2222 root@127.0.0.1 # plus de phrase de passe
+\end{bashcode}
+\texttt{SSH\_AUTH\_SOCK} pointe vers le socket UNIX de l'agent, \texttt{SSH\_AGENT\_PID}
+vers son PID. Tout processus de la session (votre shell, un éditeur, un script) qui voit
+cette variable peut demander à l'agent de signer — c'est ce qui rend
+\texttt{git clone git@github.com:} ou \texttt{rsync} transparents.
+\end{solution}
+\question Chargez vos deux clés dans l'agent. Listez-les.
+\begin{solution}
+\begin{bashcode}
+ssh-add ~/.ssh/id_ed25519 ~/.ssh/id_ed25519_cible
+ssh-add -l
+# 256 SHA256:aaaa... prenom.nom@poste (ED25519)
+# 256 SHA256:bbbb... prenom.nom@poste-pour-cible (ED25519)
+\end{bashcode}
+\end{solution}
+\question Limitez la durée de vie d'une clé à 1~heure. Comment observez-vous son expiration ?
+\begin{solution}
+\begin{bashcode}
+ssh-add -t 3600 ~/.ssh/id_ed25519_cible
+ssh-add -l          # présente pendant 1h
+# ... une heure plus tard ...
+ssh-add -l          # la clé a disparu de la liste, il faudra re-ssh-add
+\end{bashcode}
+\texttt{-t} prend une durée en secondes. Utile sur un poste partagé ou en salle de travaux
+pratiques : la clé quitte la mémoire de l'agent toute seule.
+\end{solution}
+\question Si votre poste de travail est \textbf{Windows} (client OpenSSH natif) : le service
+\texttt{ssh-agent} joue le même rôle. Quelles commandes PowerShell vérifient le service et
+chargent une clé ?
+\begin{solution}
+\begin{bashcode}
+Get-Service ssh-agent
+Start-Service ssh-agent          # si arrêté
+ssh-add $HOME\.ssh\id_ed25519
+ssh-add -l
+\end{bashcode}
+Compte-rendu utile à retenir : sur Windows, les clés des comptes \emph{administrateurs}
+peuvent aussi être placées dans
+\texttt{C:\textbackslash ProgramData\textbackslash ssh\textbackslash administrators\_authorized\_keys}
+côté serveur, mais côté client rien ne change : c'est le même \texttt{ssh-add}.
+\end{solution}
+\question Ajoutez \texttt{AddKeysToAgent yes} dans votre config (section suivante) et expliquez
+le comportement obtenu.
+\begin{solution}
+Dès qu'une clé déverrouillée \emph{a servi} pour s'authentifier, elle est automatiquement
+ajoutée à l'agent pour la suite de la session : vous ne re-saisissez la phrase de passe
+qu'une fois, même si vous aviez oublié de faire \texttt{ssh-add} avant.
+\end{solution}
+\question \textbf{Le piège du \texttt{ForwardAgent}.} Connectez-vous au bastion avec
+\texttt{ssh -A} (ou \texttt{ForwardAgent yes}), puis exécutez \emph{sur le bastion}
+\texttt{ssh-add -l}. Que voyez-vous ? Formulez précisément le risque, puis expliquez
+pourquoi le \texttt{ProxyJump} (section suivante) ne présente pas ce risque.
+\begin{solution}
+\begin{bashcode}
+ssh -A -p 2222 root@127.0.0.1
+# sur le bastion :
+ssh-add -l
+# les clés de VOTRE agent local sont listées sur le bastion !
+\end{bashcode}
+Risque : pendant la durée de votre session, \emph{tout} processus ou utilisateur ayant un
+accès shell sur le bastion peut utiliser \textbf{vos} clés (la variable \texttt{SSH\_AUTH\_SOCK}
+est transmise dans la session). Si le bastion est compromis, vos accès à \emph{tous} les
+serveurs où ces clés sont déposées le sont aussi.
+Avec \texttt{ProxyJump}, la clé est présentée \emph{depuis votre poste} pour chaque saut :
+elle ne transite jamais \emph{sur} le bastion ; le bastion n'a qu'un simple flux TCP
+transité. Principe : chaque saut a sa propre clé, rien ne se transite.
+\end{solution}
+\end{questions}
+
+\section{Le fichier \texttt{\textasciitilde/.ssh/config}}
+
+La ligne de commande \texttt{ssh} est faite pour être tapée ; le fichier de configuration est
+fait pour qu'on ne tape \emph{plus rien}. Règle essentielle : la première valeur trouvée
+pour une option est celle qui est utilisée, donc les hôtes spécifiques doivent précéder les
+blocs \texttt{Host *}.
+
+\begin{questions}
+\question Écrivez un \texttt{\textasciitilde/.ssh/config} définissant deux alias,
+\texttt{bastion} et \texttt{cible} (avec \texttt{ProxyJump bastion} pour la cible),
+chacun avec son \texttt{IdentityFile}. Vérifiez que \texttt{ssh bastion} fonctionne.
+\begin{solution}
+\begin{bashcode}
+cat > ~/.ssh/config <<'EOF'
+Host bastion
+    HostName 127.0.0.1
+    Port 2222
+    User root
+    IdentityFile ~/.ssh/id_ed25519
+
+Host cible
+    HostName 10.99.0.11
+    User root
+    IdentityFile ~/.ssh/id_ed25519_cible
+    ProxyJump bastion
+EOF
+chmod 600 ~/.ssh/config
+ssh bastion && ssh cible
+\end{bashcode}
+Désormais : plus d'IP, plus de \texttt{-p}, plus de \texttt{-i}, plus de
+\texttt{-o ProxyCommand=...}.
+\end{solution}
+\question Complétez avec un bloc \texttt{Host *} de valeurs par défaut
+(\texttt{ServerAliveInterval}, \texttt{ConnectTimeout}, \texttt{AddKeysToAgent}).
+Quelles options \textbf{ne doivent jamais} figurer dans un \texttt{Host *} et pourquoi ?
+\begin{solution}
+\begin{bashcode}
+cat > ~/.ssh/config <<'EOF'
+Host *
+    ServerAliveInterval 60        # keepalive client->serveur : détecte les connexions mortes
+    ServerAliveCountMax 3
+    ConnectTimeout 10
+    AddKeysToAgent yes
+    ControlMaster auto
+    ControlPath ~/.ssh/ctl-%C
+    ControlPersist 10m
+
+Host bastion
+    HostName 127.0.0.1
+    Port 2222
+    User root
+    IdentityFile ~/.ssh/id_ed25519
+
+Host cible
+    HostName 10.99.0.11
+    User root
+    IdentityFile ~/.ssh/id_ed25519_cible
+    ProxyJump bastion
+EOF
+\end{bashcode}
+Jamais dans \texttt{Host *} : \texttt{ForwardAgent} (le piège de la section précédente
+s'appliquerait à \emph{tous} vos serveurs) et \texttt{IdentityFile} global (présenter
+systématiquement la même clé partout revient à ne pas isoler les contextes, et rend la
+révocation par clé impossible à cibler).
+\end{solution}
+\question Si un hôte liste \emph{plusieurs} \texttt{IdentityFile}, quel est le comportement
+d'OpenSSH ? Et que change \texttt{IdentitiesOnly yes} ?
+\begin{solution}
+Sans \texttt{IdentitiesOnly}, OpenSSH essaie \emph{toutes} les clés candidates
+(IdentityFiles de la config \emph{plus} toutes les clés de l'agent) jusqu'à ce qu'une
+soit acceptée. C'est pratique, mais ça expose votre agent au serveur : chaque clé
+présentée est annoncée. \texttt{IdentitiesOnly yes} restreint la tentative aux
+\texttt{IdentityFile} explicites uniquement — utile quand un serveur est saturé de
+tentatives ou quand on veut un comportement déterministe (c'est aussi l'un des pièges
+du challenge final).
+\end{solution}
+\question Astuce de diagnostic : \texttt{ssh -G} affiche la configuration \emph{résolue}
+pour un hôte, sans se connecter. Utilisez-le pour vérifier quel \texttt{IdentityFile}
+s'applique à \texttt{cible} et quelle valeur effective a \texttt{ServerAliveInterval}.
+\begin{solution}
+\begin{bashcode}
+ssh -G cible | grep -Ei "^(identityfile|serveraliveinterval|proxyjump) "
+# identityfile /home/pouchou/.ssh/id_ed25519_cible
+# serveraliveinterval 60
+# proxyjump bastion
+\end{bashcode}
+\texttt{ssh -G} est l'outil de « debug de config » par excellence : il matérialise la
+fusion Host */Host spécifique et les valeurs par défaut.
+\end{solution}
+\question Votre parc grandit : vous voulez partager un fichier de config d'équipe sans
+écraser le vôtre. Utilisez la directive \texttt{Include} (OpenSSH $\geq$ 7.4) pour charger
+\texttt{~/.ssh/config.d/labs.conf}.
+\begin{solution}
+\begin{bashcode}
+mkdir -p ~/.ssh/config.d
+cat > ~/.ssh/config.d/labs.conf <<'EOF'
+Host lab-*
+    User root
+    StrictHostKeyChecking accept-new
+EOF
+# en tête du config principal :
+sed -i '1i Include config.d/*.conf' ~/.ssh/config
+ssh -G lab-42 | grep -i user
+\end{bashcode}
+\texttt{Include} est évalué à l'endroit où il est écrit (donc en tête = haute priorité).
+C'est le mécanisme standard pour les dotfiles : le config « personnel » reste versionné
+séparément des configs « contexte ».
+\end{solution}
+\end{questions}
+
+\section{Bastion : la connexion par saut (\texttt{ProxyJump})}
+
+Scénario type d'entreprise : le serveur \texttt{cible} n'écoute que sur le réseau interne
+; le \textbf{bastion} est la seule machine exposée. Objectif : \texttt{ssh cible} en une
+commande, avec la bonne clé à chaque saut, \emph{sans jamais transmettre de clé au bastion}.
+
+\begin{questions}
+\question Précisez la différence \textbf{sémantique} entre \texttt{ProxyJump} et
+\texttt{ForwardAgent}.
+\begin{solution}
+\texttt{ForwardAgent} : l'agent \emph{local} est \emph{disponible} sur le saut (socket
+transféré) ; c'est le client distant qui choisit et présente les clés — la clé, elle,
+n'est pas copiée, mais elle est \emph{utilisable} depuis le saut.
+\texttt{ProxyJump} : le client \emph{local} établit lui-même les deux connexions SSH
+(saut puis cible) ; le saut ne voit qu'un flux TCP brut qu'il transite (\texttt{-W}).
+Aucune clé ne passe sur le saut, aucune variable d'agent n'y est exposée.
+\end{solution}
+\question \textbf{Ancienne syntaxe} : connectez-vous à la cible avec
+\texttt{ssh -o "ProxyCommand=ssh bastion -W \%h:\%p" 10.99.0.11}. Qui exécute quoi sur
+le bastion ? Que fait exactement \texttt{-W hôte:port} ?
+\begin{solution}
+\begin{bashcode}
+ssh -o "ProxyCommand=ssh bastion -W %h:%p" 10.99.0.11
+# %h -> 10.99.0.11, %p -> 22
+\end{bashcode}
+La \texttt{ProxyCommand} s'exécute \emph{en local} ; ici elle lance un \texttt{ssh} vers
+le bastion en mode \texttt{-W} : le daemon du bastion ouvre un flux TCP vers
+\texttt{\%h:\%p} et y branche le stdin/stdout du client local. Le bastion ne crée
+\textbf{aucune session shell} pour la connexion à la cible — il transite.
+\end{solution}
+\question \textbf{Syntaxe moderne} : faites la même chose avec \texttt{-J}. Pourquoi est-ce
+plus sûr et plus lisible ?
+\begin{solution}
+\begin{bashcode}
+ssh -J bastion 10.99.0.11
+# ou avec l'alias :
+ssh -J bastion cible
+\end{bashcode}
+\texttt{-J} est un \texttt{ProxyCommand} standardisé : OpenSSH construit lui-même la
+chaîne, gère les erreurs saut/cible séparément, s'intègre au config, et compose avec
+\texttt{-L}/\texttt{-R} (les tunnels s'appliquent sur la destination finale). En ligne de
+commande, c'est aussi infiniment plus court et auditable.
+\end{solution}
+\question Comment OpenSSH choisit-il la clé \textbf{pour le saut} et la clé \textbf{pour
+la destination} ? (Indice : votre agent contient les deux clés.)
+\begin{solution}
+Pour chaque connexion de la chaîne (saut, puis cible), OpenSSH tente les clés candidates
+de l'agent et les \texttt{IdentityFile} de la config \emph{de cet hôte} :
+\begin{itemize}
+  \item le saut \texttt{bastion} : la config de \texttt{bastion} pointe sur
+        \texttt{id\_ed25519} $\rightarrow$ c'est la clé du bastion qui est présentée ;
+  \item la destination \texttt{cible} : \texttt{IdentityFile id\_ed25519\_cible} $\rightarrow$
+        la clé cible.
+\end{itemize}
+Comme la clé \texttt{cible} est absente du bastion et la clé \texttt{bastion} absente de la
+cible, même un contournement par l'agent ne permet pas d'aller plus loin que le périmètre
+de chaque clé. \emph{Chaque saut a sa clé} : c'est le modèle de sécurité à retenir.
+\end{solution}
+\question Sans modifier la configuration, sur une ligne de commande unique exécutée
+depuis votre hôte, obtenez \texttt{hostname \&\& whoami} sur la cible via le bastion.
+\begin{solution}
+\begin{bashcode}
+ssh -J bastion 10.99.0.11 'hostname && whoami'
+# cible
+# root
+\end{bashcode}
+\end{solution}
+\question Preuve de transit : depuis la cible, listez les connexions TCP établies
+(\texttt{ss -tn state established | grep 22}). Qui est l'adresse source des sessions
+\texttt{ssh} ? Que voit \texttt{sshd} du bastion quand vous vous connectez à la cible ?
+\begin{solution}
+\begin{bashcode}
+# sur la cible :
+ss -tn state established | grep :22
+# TCP  ESTAB  10.99.0.11:22    10.99.0.10:39412     <- la source est le BASTION
+\end{bashcode}
+Pour \texttt{sshd} de la cible, la connexion vient de \texttt{10.99.0.10} : le bastion.
+C'est le modèle classique de journalisation d'un bastion (le bastion doit conserver ses
+propres journaux pour rattacher « qui, depuis l'extérieur » à « quelle connexion interne »).
+\end{solution}
+\end{questions}
+
+\section{Tunnels : du forwarding à la demande}
+
+Trois mécanismes, un même principe : des flux TCP \emph{embarqués} dans la connexion SSH
+chiffrée. Rappels de topologie : l'hôte ne voit que le bastion (2222) ; le service 8080
+tourne sur la cible.
+
+\begin{questions}
+\question \textbf{Tunnel local} : depuis l'hôte, ouvrez
+\texttt{ssh -N -L 18080:127.0.0.1:8080 cible} et récupérez le service avec
+\texttt{curl 127.0.0.1:18080}. Décomposez la syntaxe \texttt{-L
+[adresse\_locale:]port\_local:hote:port} et répondez à la question capitale :
+\textbf{sur quelle machine} \texttt{hote:port} est-elle interprétée ?
+\begin{solution}
+\begin{bashcode}
+ssh -N -L 18080:127.0.0.1:8080 cible
+curl 127.0.0.1:18080
+# SERVICE INTERNE CIBLE 10.99.0.11
+\end{bashcode}
+\texttt{127.0.0.1:8080} est résolu \textbf{du point de vue de la destination} de la
+connexion SSH (la cible, ou plus généralement le dernier hôte de la chaîne si on passe
+par un \texttt{ProxyJump}) : le daemon SSH de la cible ouvre la connexion locale vers son
+\texttt{127.0.0.1:8080}. C'est pour cette raison qu'on écrit
+\texttt{-L 5432:localhost:5432} pour une base : « la base qui tourne \emph{sur le serveur
+où je me connecte} ».
+\texttt{-N} = pas de session shell distante, juste le tunnel.
+\end{solution}
+\question Qui \emph{écoute} sur le port 18080 de votre hôte ? Montrez-le avec
+\texttt{ss -ltnp}. Que se passe-t-il si vous ajoutez
+\texttt{-L 0.0.0.0:18080:127.0.0.1:8080} ? Et quelle est la politique par défaut d'OpenSSH
+récente ?
+\begin{solution}
+\begin{bashcode}
+ss -ltnp | grep 18080
+# LISTEN  0  128  127.0.0.1:18080  0.0.0.0:*  users:(("ssh",pid=...))
+\end{bashcode}
+C'est le \textbf{processus client \texttt{ssh} de votre poste} qui écoute, et qui reboucle
+sur la cible. Avec l'adresse explicite \texttt{0.0.0.0}, l'écoute devient visible sur
+\emph{toutes} les interfaces de l'hôte : n'importe qui sur le LAN de l'hôte peut atteindre
+le service interne via vous — à ne faire que pour un usage contrôlé (ex. : partage vers
+une autre machine locale). Depuis OpenSSH 7.4, l'écoute locale est par défaut
+\textbf{restreinte à la boucle} : c'est le comportement sûr.
+\end{solution}
+\question Cas professionnel : accéder à une base PostgreSQL interne \emph{sans ouvrir le
+port 5432}. Écrivez la commande (tunnel local sur 5433) et l'outil client qui l'utilise.
+\begin{solution}
+\begin{bashcode}
+ssh -N -f -L 5433:127.0.0.1:5432 cible
+# -f : passe en arrière-plan après l'authentification (nécessite -N ou -L/-R/-D)
+pg_dump -h 127.0.0.1 -p 5433 -U postgres ma_base > dump.sql
+psql -h 127.0.0.1 -p 5433 -U postgres
+\end{bashcode}
+Avantages sur l'ouverture directe du port : le service n'a pas à écouter sur une
+interface externe (souvent \texttt{listen\_addresses = localhost} dans
+\texttt{postgresql.conf}), pas de règle de firewall supplémentaire, le chiffrement est
+celui de SSH, et la révocation se fait en coupant le tunnel. C'est \emph{la} méthode
+standard pour les bases, l'UI de gestion, l'API interne.
+\end{solution}
+\question \textbf{Tunnel distant} : sur votre \emph{hôte}, lancez
+\texttt{python3 -m http.server 3000} dans un répertoire contenant un fichier
+\texttt{marqueur.html}. Depuis l'hôte, ouvrez
+\texttt{ssh -R 8080:127.0.0.1:3000 cible}, puis depuis \emph{la cible}
+\texttt{curl 127.0.0.1:8080}. Qui écoute où cette fois ?
+\begin{solution}
+\begin{bashcode}
+# sur l'hôte :
+mkdir -p /tmp/www && echo "MARQUEUR DEPUIS L'HOTE" > /tmp/www/marqueur.html
+cd /tmp/www && python3 -m http.server 3000 &
+ssh -R 8080:127.0.0.1:3000 cible
+# sur la cible :
+curl 127.0.0.1:8080/marqueur.html
+# MARQUEUR DEPUIS L'HOTE
+\end{bashcode}
+Symétrique du local : c'est le \textbf{daemon \texttt{sshd} de la cible} qui écoute sur
+\texttt{127.0.0.1:8080} et renvoie le flux vers \texttt{127.0.0.1:3000} \emph{de l'hôte}.
+Usages typiques : exposer à distance un service qui tourne sur votre poste (Jupyter, un
+dashboard, un outil de debug), ou recevoir le trafic d'un serveur qui ne peut pas sortir.
+\end{solution}
+\question Côté serveur, quelles options \texttt{sshd\_config} gouvernent ces tunnels
+(\texttt{AllowTcpForwarding}, \texttt{GatewayPorts}) ? Que bloque
+\texttt{AllowTcpForwarding no} sur le bastion, et pourquoi un « bastion kiosque » peut
+être configuré ainsi ?
+\begin{solution}
+\begin{itemize}
+  \item \texttt{AllowTcpForwarding yes} (défaut) : autorise les tunnels \emph{locaux}
+        (\texttt{-L}) depuis les clients.
+  \item \texttt{AllowTcpForwarding no} : refuse les tunnels \texttt{-R} \emph{demandés
+        par le client distant} (le client local \texttt{-L} est quand même possible ;
+        c'est \texttt{PermitTunnel} et les règles \texttt{Match} qui affinent).
+        Sur un bastion « kiosque » (accès shell only, pas de tunnel),
+        \texttt{AllowTcpForwarding no} empêche d'utiliser le bastion comme relais pour
+        contourner le réseau.
+  \item \texttt{GatewayPorts no} (défaut) : les écouteurs \texttt{-R} ne se bindent que sur
+        la boucle de la machine distante. \texttt{GatewayPorts clients/all} autoriserait
+        le bind sur d'autres interfaces : à réserver à des cas très encadrés.
+\end{itemize}
+\end{solution}
+\question \textbf{Tunnel dynamique} : ouvrez \texttt{ssh -N -D 1080 cible} puis depuis
+l'hôte : \texttt{curl --socks5-hostname 127.0.0.1:1080
+http://10.99.0.11:8080/}. Expliquez ce que fait \texttt{-D}, la différence entre
+\texttt{--socks5} et \texttt{--socks5-hostname}, et ce que le dynamique \emph{ne remplace
+pas}.
+\begin{solution}
+\begin{bashcode}
+ssh -N -D 1080 cible
+curl --socks5-hostname 127.0.0.1:1080 http://10.99.0.11:8080/
+# SERVICE INTERNE CIBLE 10.99.0.11
+\end{bashcode}
+\texttt{-D} ouvre un \textbf{proxy SOCKS5} : n'importe quel client SOCKS peut, à travers
+le tunnel, se connecter à \emph{n'importe quelle} destination joignable \emph{depuis le
+serveur} — un « VPN de fortune » au niveau applicatif.
+\texttt{--socks5} résout le DNS \emph{en local} puis envoie l'IP ;
+\texttt{--socks5-hostname} envoie le nom d'hôte et laisse le serveur résoudre : c'est la
+bonne option car c'est la \emph{résolution côté serveur} qui compte (le DNS interne).
+Limites à connaître : pas de multicast, pas d'accès \emph{entrant} sur l'hôte, pas de
+transparence pour les applications non-SOCKS, et le chiffrement ne protège que le tunnel
+SSH (le HTTPS reste chiffré de bout en bout). Pour du réseau complet, un vrai VPN
+(WireGuard) reste l'outil adéquat.
+\end{solution}
+\question Astuce de durcissement : vous voulez interdire à l'équipe de créer des tunnels
+depuis le bastion pendant une période (audit). Quelle option \texttt{sshd\_config} et quel
+\texttt{Match} combiner ? (Pas besoin de tester, écrivez le bloc.)
+\begin{solution}
+\begin{bashcode}
+# /etc/ssh/sshd_config (bastion)
+Match Address 10.99.0.0/24
+    AllowTcpForwarding no
+# puis :
+systemctl reload ssh
+\end{bashcode}
+\texttt{Match} applique les directives suivantes \emph{seulement} aux connexions qui y
+correspondent (adresse source, utilisateur, hôte, clé...) — c'est l'outil de
+différenciation fine du daemon.
+\end{solution}
+\end{questions}
+
+\section{Multiplexage : \texttt{ControlMaster}, l'art du jour}
+
+Chaque \texttt{ssh} classique coûte : une poignée de main TCP, un échange de clés
+(chiffrement), une authentification complète. Avec le \textbf{multiplexage}, la première
+connexion établit un canal maître ; toutes les suivantes réutilisent ce canal chiffré et
+authentifié : les sessions ultérieures sont de simples \emph{channels} supplémentaires.
+
+Votre config contient déjà (section \texttt{Host *} de la question 2) :
+\begin{bashcode}
+ControlMaster auto
+ControlPath ~/.ssh/ctl-%C
+ControlPersist 10m
+\end{bashcode}
+
+\begin{questions}
+\question Mesurez l'effet : exécutez \textbf{deux fois de suite}
+\texttt{time ssh bastion true}. Comparez les durées. Expliquez \emph{exactement} ce qui
+est économisé à la deuxième exécution.
+\begin{solution}
+\begin{bashcode}
+time ssh bastion true
+# première : 0.3 à 2 s (TCP + kex + auth)
+time ssh bastion true
+# seconde : ~20-50 ms (ouverture d'un channel sur la connexion existante)
+\end{bashcode}
+Économisé à la seconde exécution : la TCP SYN/ACK, la négociation des algorithmes
+(kex), l'échange des clés de session, et toute l'authentification (échange de
+signatures). Il ne reste que l'ouverture d'un channel multiplexé sur la connexion
+maître déjà chiffrée.
+\end{solution}
+\question Inspectez le maître : \texttt{ssh -O check bastion}. Que renseigne-t-il ?
+Quels sont les autres \texttt{-O} utiles ?
+\begin{solution}
+\begin{bashcode}
+ssh -O check bastion
+# Master running (pid=12345), 1 channel opened.
+#  Open master channel: 0/1 (persistent)
+ssh -O cancel bastion     # tue le maître et ses tunnels
+\end{bashcode}
+\texttt{check} (état), \texttt{cancel} (arrêt), \texttt{logout} (déconnexion du maître
+sans tuer les channels ouverts). Indispensable pour le dépannage « mon tunnel ne marche
+plus, est-ce que le maître est encore vivant ? ».
+\end{solution}
+\question Observez le socket : \texttt{ls -l ~/.ssh/ctl-*}. Quel type de fichier, quelles
+permissions ? Pourquoi sont-elles essentielles à la sécurité du multiplexage ?
+\begin{solution}
+\begin{bashcode}
+ls -l ~/.ssh/ctl-*
+# srw------- 1 pouchou pouchou 0 Sep 29 10:15 /home/pouchou/.ssh/ctl-abc123...
+\end{bashcode}
+C'est un \textbf{socket UNIX} (le \texttt{s}), en \texttt{0600} dans un
+\texttt{~/.ssh} en \texttt{0700}. Quiconque peut \emph{écrire} sur ce socket peut
+\emph{s'asseyer} sur la connexion maître : ouvrir des channels, exécuter des commandes,
+ouvrir des tunnels \textbf{sans se re-authentifier}. D'où l'exigence : propriétaire seul,
+dans un répertoire privé. Ne pointez jamais \texttt{ControlPath} vers
+\texttt{/tmp} (monde lisible/écrivable).
+\end{solution}
+\question Pourquoi \texttt{\%C} plutôt que \texttt{\%r@\%h:\%p} dans \texttt{ControlPath} ?
+\begin{solution}
+\texttt{\%C} est un \emph{hash} de la combinaison \texttt{\%r@\%h:\%p} : la longueur du
+chemin est donc bornée. Sur Linux, le chemin d'un socket UNIX est limité à
+\textbf{108~caractères} (champ \texttt{sun\_path}) ; avec de longs
+\texttt{HostName} (FQDN) et de longs chemins de home,
+\texttt{~/.ssh/ctl-\%r@\%h:\%p} déborde et la connexion échoue avec un message du type
+\texttt{Socket path too long}. \texttt{\%C} élimine ce genre d'échec bête.
+\end{solution}
+\question \textbf{Tunnels qui survivent} : ouvrez un tunnel en arrière-plan
+(\texttt{ssh -fN -L 18080:127.0.0.1:8080 cible}), puis \emph{fermez le terminal}.
+Le tunnel est-il encore là ? Pourquoi le combo \texttt{ControlPersist} + \texttt{-fN} est-il
+le bon réflexe ?
+\begin{solution}
+\begin{bashcode}
+ssh -fN -L 18080:127.0.0.1:8080 cible
+# ... fermeture du terminal ...
+curl 127.0.0.1:18080     # toujours servable
+ssh -O check cible       # Master running (pid=...)
+\end{bashcode}
+Sans \texttt{ControlPersist}, le maître meurt quand le dernier client se déconnecte : le
+tunnel \texttt{-fN} mourrait avec votre terminal. Avec
+\texttt{ControlPersist 10m}, le maître survit 10~minutes après la dernière déconnexion
+(idem pour un tunnel \texttt{-fN}) : il est là quand vous revenez, et il se nettoie tout
+seul si vous oubliez. C'est le combo « tunnel persistant mais pas zombie ».
+\end{solution}
+\question \texttt{ControlPersist} accepte une durée, \texttt{yes}, ou \texttt{unset}.
+Que fait chacun ?
+\begin{solution}
+\begin{itemize}
+  \item \texttt{ControlPersist 10m} : le maître survit 10~min après la dernière
+        déconnexion, puis s'éteint ;
+  \item \texttt{ControlPersist yes} : le maître persiste \emph{indéfiniment} (jusqu'à
+        \texttt{-O cancel} ou au reboot) — pratique, mais à ne pas laisser par défaut ;
+  \item \texttt{ControlPersist unset} : désactive la persistance ; le maître meurt avec
+        le dernier client.
+\end{itemize}
+\end{solution}
+\question Multiplexage et \textbf{scripts} : chronométrez un script qui ouvre 20 connexions
+séquentielles vers le bastion avec et sans multiplexage. Citez un outil d'automatisation
+qui profite de ce mécanisme.
+\begin{solution}
+\begin{bashcode}
+time for i in $(seq 20); do ssh bastion true; done
+# sans ControlMaster : ~30-60 s (20 auths complètes)
+# avec            : ~0.5-1 s  (1 auth + 19 channels)
+\end{bashcode}
+Les outilleurs d'automatisation sur SSH (les playbooks qui ouvrent une session par tache,
+certaines implémentations d'outils de provisionnement type pyinfra/ansible en mode
+\texttt{ssh}) réduisent drastiquement leur temps de run quand le client multiplexe ;
+c'est aussi le mécanisme que \texttt{git} (via libssh2/OpenSSH) et \texttt{rsync}
+\texttt{ssh://} bénéficient indirectement.
+\end{solution}
+\question \textbf{Dépannage} : deux pannes classiques du multiplexage.
+(a)~\texttt{Master has died} au milieu d'une session ; (b)~un maître « zombie » qui
+n'accepte plus rien (réseau mort). Dans chaque cas, la commande à exécuter.
+\begin{solution}
+\begin{bashcode}
+# (a) le serveur a coupé (reboot, keepalive dépassé) :
+ssh -O check bastion     # "Error: Control socket ... does not exist"
+ssh bastion              # une simple reconnexion rétablit un nouveau maître
+# (b) un maître coincé (WiFi coupé, NAT expiré) :
+ssh -O check bastion     # "Master running" mais les commandes partent en timeout
+ssh -O cancel bastion    # purge le zombie ; la prochaine connexion en crée un frais
+\end{bashcode}
+Le réflexe de dépannage est toujours : \texttt{-O check} pour voir l'état,
+\texttt{-O cancel} pour forcer, re-connexion.
+\end{solution}
+\end{questions}
+
+\section{Exécuter à distance, déboguer, survivre}
+
+\begin{questions}
+\question Exécutez une commande sur la cible \emph{sans ouvrir de shell interactif} et
+récupérez son code de retour localement. Montrez aussi le code de retour « spécial »
+qu'OpenSSH utilise pour ses propres erreurs.
+\begin{solution}
+\begin{bashcode}
+ssh cible 'df -h /'
+ssh cible 'exit 42'; echo $?
+# 42  -> le code de retour distant est propagé tel quel
+ssh hote-inexistant true; echo $?
+# 255 -> code réservé aux erreurs du client SSH lui-même
+\end{bashcode}
+\texttt{255} est la convention OpenSSH pour « c'est \emph{moi} le client qui a un
+problème » (résolution, config, réseau), pas la commande distante.
+\end{solution}
+\question \textbf{Le piège du stdin} : le script ci-dessous ne s'exécute qu'une fois au
+lieu de deux. Expliquez, puis corrigez.
+\begin{bashcode}
+while read -r ligne; do
+    ssh cible "echo \$ligne"
+done < liste.txt
+\end{bashcode}
+\begin{solution}
+Le \texttt{ssh} de la première itération \emph{bavasse} dans le stdin hérité (la boucle
+\texttt{read}) et consomme le reste du fichier. Correction : \texttt{-n}, qui redirige le
+stdin de ssh vers \texttt{/dev/null} :
+\begin{bashcode}
+while read -r ligne; do
+    ssh -n cible "echo \$ligne"
+done < liste.txt
+# ou, plus lisible :
+while read -r ligne; do
+    printf '%s\n' "$ligne" | ssh cible "echo stdin-reçu"
+done < liste.txt
+\end{bashcode}
+\texttt{-n} est indispensable dans toute boucle qui appelle \texttt{ssh} avec un stdin
+actif ; symétriquement, quand on \emph{veut} envoyer du stdin à la commande distante,
+on utilise un pipe explicite.
+\end{solution}
+\question Transfert non interactif : utilisez \texttt{sftp} en mode batch pour déposer un
+fichier sur la cible. Comparez avec \texttt{scp} (rappel : depuis OpenSSH 9.0,
+\texttt{scp} utilise par défaut le protocole SFTP).
+\begin{solution}
+\begin{bashcode}
+printf 'put rapport.pdf /tmp/\nbye\n' > depot.batch
+sftp -b depot.batch cible
+# ou une ligne :
+sftp cible <<< $'put rapport.pdf /tmp/\nbye'
+# scp équivalent (protocole SFTP depuis OpenSSH 9.0 ; -O pour revenir au legacy) :
+scp rapport.pdf cible:/tmp/
+\end{bashcode}
+Pour des \emph{arborescences} nombreuses, \texttt{rsync -e ssh} reste l'outil de
+référence (réincrémental, delta) ; \texttt{scp} est à réserver aux transferts simples.
+\end{solution}
+\question \textbf{Débogage} : connectez-vous avec \texttt{ssh -v bastion} et repérez dans
+la sortie (i)~la clé de hôte proposée par le serveur, (ii)~la clé utilisée pour
+l'authentification, (iii)~la méthode d'auth acceptée. À quoi sert \texttt{-vvv} ?
+\begin{solution}
+\begin{bashcode}
+ssh -v bastion 2>&1 | grep -Ei "server host key|offering publickey|server accepts|authenticated"
+# debug1: Server host key: ECDSA 256 SHA256:XXXX...
+# debug1: Offering public key: ED25519 AAAA...
+# debug1: Server accepts key: ...
+# debug1: Authentication succeeded (publickey).
+\end{bashcode}
+\texttt{-v} : le niveau de debug standard, lisible. \texttt{-vvv} : tout le détail
+protocole (chiffres, algorithmes négociés, chaque message) — utile pour un bug
+d'interopérabilité ou un ticket à OpenSSH, pas pour le quotidien.
+\end{solution}
+\question \textbf{HOST KEY CHANGED} : changez l'IP NAT du bastion (ex. vers 2223) puis
+reconnectez-vous sur l'ancienne IP. Que répond ssh ? Pourquoi ? Quelle est la procédure
+légitime, et la différence entre \texttt{StrictHostKeyChecking=accept-new} et
+\texttt{=no} ?
+\begin{solution}
+\begin{bashcode}
+# après un changement d'IP/rebuild, l'ancienne IP renvoie une clé différente :
+ssh -p 2222 root@127.0.0.1
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+# @    WARNING: REMOTE HOST IDENTIFICATION HAS CHANGED!     @
+# ... IT IS POSSIBLE THAT someone is mist...
+# HOST KEY CHANGED!
+\end{bashcode}
+Le serveur présente une clé de hôte différente de celle enregistrée dans
+\texttt{known\_hosts} : soit la VM a été reconstruite (cas légitime : nouveau
+\texttt{sshd\_host\_key}), soit un MITM répond à la place du serveur. La procédure
+légitime : vérifier l'empreinte \emph{out-of-band} (console physique, canal séparé),
+puis :
+\begin{bashcode}
+ssh-keygen -R "127.0.0.1:2222"   # retire l'entrée obsolète de known_hosts
+ssh -p 2222 root@127.0.0.1       # première connexion : acceptation consciente
+\end{bashcode}
+\texttt{accept-new} (OpenSSH 7.6+) : accepte et \emph{enregistre} les hôtes \emph{nuls},
+mais refuse toujours un changement de clé existant — c'est le bon réglage par défaut
+pour l'automatisation. \texttt{no} : accepte \emph{tout} silencieusement —
+\textbf{jamais}, même « pour que le CI passe ».
+\end{solution}
+\question Un fichier \texttt{known\_hosts} peut être personnalisé avec
+\texttt{KnownHostsFile}. Citez deux cas d'usage.
+\begin{solution}
+\begin{itemize}
+  \item un service qui tourne sous un utilisateur \emph{dédié} (pas votre compte) avec
+        ses propres clés : \texttt{KnownHostsFile /etc/ssh/known\_hosts\_service} ;
+  \item des configs par \emph{projet} (une flotte de clients A vs de clients B) pour ne
+        pas polluer le \texttt{known\_hosts} personnel.
+\end{itemize}
+\end{solution}
+\question Votre connexion au campus coupe régulièrement (WiFi). Décrivez le rôle de
+\texttt{ServerAliveInterval} / \texttt{ServerAliveCountMax}, puis montrez l'alternative
+qui \emph{survit} aux pertes de réseau : \texttt{mosh}.
+\begin{solution}
+\begin{bashcode}
+# côté config :
+#   ServerAliveInterval 30   # envoie un keepalive chiffré toutes les 30 s
+#   ServerAliveCountMax 3    # 3 keepalive sans réponse = connexion déclarée morte
+\end{bashcode}
+Ces keepalive \emph{détectent} les connexions mortes (NAT expiré, route disparue) et
+provoquent une erreur nette plutôt qu'un hang. Mais SSH, en TCP, \emph{ne survit pas} au
+changement d'adresse IP (l'uplet 4-tuple est cassé) : il faut reconnecter.
+\texttt{mosh} (Mobile Shell), en UDP avec re-synchronisation d'état, \emph{survit} au
+roaming et aux coupures courtes :
+\begin{bashcode}
+sudo apt install mosh
+mosh bastion
+# (test : décochez la carte NAT dans VirtualBox pendant 10 s, puis recochez-la)
+# la session mosh est intouchable ; la session ssh classique est morte
+\end{bashcode}
+Pour du travail en salle de TP sur le WiFi, \texttt{mosh} + clés + config est le
+combo le plus confortable ; pour de l'automatisation, on reste sur \texttt{ssh} avec
+keepalive.
+\end{solution}
+\end{questions}
+
+\section{Challenge : la config qui ne marche pas}
+
+Votre collègue a laissé cette config. Il ne parvient pas à se connecter au serveur
+interne \texttt{10.99.0.11} (alias \texttt{lab}) via le bastion. Il a en outre « perdu »
+les permissions de sa clé en recopiant son \texttt{\textasciitilde/.ssh} sur un clé USB.
+
+\begin{bashcode}
+# ~/.ssh/config du collègue
+Host lab
+    HostName 10.99.0.11
+    User root
+    IdentityFile ~/.ssh/id_ed25519
+    IdentitiesOnly yes
+    ProxyCommand ssh -W %h:%p 127.0.0.1 -p 2222
+    ControlMaster auto
+    ControlPath ~/.ssh/ssh-multiplex-control-socket-for-the-connection-between-client-and-server-%r@%h-%p
+    ControlPersist 10m
+\end{bashcode}
+
+Critère de réussite :
+\begin{itemize}
+  \item \texttt{ssh lab} fonctionne en une commande ;
+  \item la \emph{seconde} \texttt{time ssh lab true} est inférieure à \textbf{50~ms} ;
+  \item aucune clé n'est exposée sur le bastion (\texttt{ssh bastion ssh-add -l} n'affiche
+    rien de plus que les clés du bastion).
+\end{itemize}
+
+\begin{questions}
+\question Identifiez et corrigez les \textbf{trois} défauts. Pour chacun, donnez le
+symptôme exact observé et la correction.
+\begin{solution}
+\textbf{1.~Permissions de la clé privée.} Recopié sur clé USB, le fichier
+\texttt{id\_ed25519} est revenu en 644 :
+\begin{bashcode}
+# symptôme :
+ssh lab
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+# @         UNPROTECTED PRIVATE KEY FILE!          @
+# Bad permissions.
+chmod 600 ~/.ssh/id_ed25519   # correction
+\end{bashcode}
+\textbf{2.~\texttt{IdentitiesOnly yes} + seule la clé du bastion.} La config ne présente
+qu'\texttt{id\_ed25519} (la clé du \emph{bastion}) aux deux sauts ; la cible n'a que
+\texttt{id\_ed25519\_cible} dans son \texttt{authorized\_keys} :
+\begin{bashcode}
+# symptôme (après correction 1) :
+ssh lab
+# root@10.99.0.11: Permission denied (publickey).
+# correction : présenter aussi la clé cible
+IdentityFile ~/.ssh/id_ed25519_cible
+\end{bashcode}
+(Le \texttt{IdentitiesOnly yes} est ici ce qui \emph{empêche} l'agent de sauver la mise :
+seules les clés listées sont présentées. On aurait pu le retirer, mais il est plus propre
+de lister explicitement les clés de chaque saut.)
+
+\textbf{3.~\texttt{ControlPath} trop long.} Le préfixe
+\texttt{ssh-multiplex-control-socket-for-the-connection-between-client-and-server-}
+pousse le chemin au-delà de 108~caractères :
+\begin{bashcode}
+# symptôme :
+ssh lab
+# .../id_ed25519:_SOCKET: Socket path too long
+# correction : utiliser %C (hash borné)
+ControlPath ~/.ssh/ctl-%C
+\end{bashcode}
+Config corrigée minimale :
+\begin{bashcode}
+Host lab
+    HostName 10.99.0.11
+    User root
+    IdentityFile ~/.ssh/id_ed25519
+    IdentityFile ~/.ssh/id_ed25519_cible
+    ProxyCommand ssh -W %h:%p 127.0.0.1 -p 2222
+    ControlMaster auto
+    ControlPath ~/.ssh/ctl-%C
+    ControlPersist 10m
+\end{bashcode}
+(Bonus : remplacer le \texttt{ProxyCommand} par \texttt{ProxyJump bastion} si un alias
+\texttt{bastion} existe dans la config.)
+\end{solution}
+\end{questions}
+
+\section{Cheatsheet}
+
+\begin{center}
+\small
+\begin{tabular}{p{0.45\textwidth} p{0.5\textwidth}}
+\hline
+\textbf{Option} & \textbf{Usage} \\
+\hline
+\texttt{ssh-keygen -t ed25519 -C "comment"} & générer une paire de clés (algorithme recommandé) \\
+\texttt{ssh-keygen -lf clé} & fingerprint (audit de \texttt{authorized\_keys}) \\
+\texttt{ssh-keygen -y -f privée} & redérive la publique depuis la privée \\
+\texttt{ssh-copy-id hôte} & déploie la clé publique \\
+\texttt{ssh-keyscan -t ed25519 hôte} & pré-peuple \texttt{known\_hosts} (pas d'auth !) \\
+\texttt{ssh-add [-t secondes]} & charge/décharge des clés dans l'agent \\
+\texttt{ssh-add -l} & liste les clés de l'agent \\
+\texttt{-i fichier} & choisit la clé présentée \\
+\texttt{IdentitiesOnly yes} & n'utilise que les \texttt{IdentityFile} (pas l'agent) \\
+\texttt{-A} / \texttt{ForwardAgent} & \textbf{piège} : expose l'agent sur le saut \\
+\texttt{-J saut} / \texttt{ProxyJump} & connexion par saut (clé locale à chaque hop) \\
+\texttt{-N} / \texttt{-fN} & pas de shell / tunnel en arrière-plan \\
+\texttt{-L port:hôte:port} & tunnel local (hôte résolu \emph{du côté serveur}) \\
+\texttt{-R port:hôte:port} & tunnel distant (écouteur \emph{sur} le serveur) \\
+\texttt{-D port} & proxy SOCKS5 dynamique \\
+\texttt{ssh -G hôte} & affiche la config résolue (debug) \\
+\texttt{ssh -O check|cancel} & état / arrêt du maître multiplexé \\
+\texttt{ControlMaster auto} & multiplexage sur socket UNIX \\
+\texttt{ControlPath ~/.ssh/ctl-\%C} & chemin borné (\%C = hash) \\
+\texttt{ControlPersist 10m} & survie du maître après déconnexion \\
+\texttt{ServerAliveInterval 30} & keepalive : détecte les connexions mortes \\
+\texttt{StrictHostKeyChecking accept-new} & accepte les nouveaux, refuse les changées \\
+\texttt{ssh-keygen -R hôte} & retire une entrée de \texttt{known\_hosts} \\
+\texttt{-v} / \texttt{-vvv} & debug (standard / protocole) \\
+\texttt{mosh hôte} & shell qui survit au roaming (UDP) \\
+\hline
+\end{tabular}
+\end{center}
+
+\section{Pour aller plus loin}
+
+\begin{itemize}
+  \item \texttt{man ssh}, \texttt{man sshd\_config}, \texttt{man ssh-config} : la référence
+        complète des options, y compris \texttt{Match} et les tokens
+        \texttt{\%h}/\texttt{\%p}/\texttt{\%r}/\texttt{\%C} ;
+  \item la spec du protocole : \emph{PROTOCOL} et \emph{PROTOCOL\.kex} dans la source
+        OpenSSH ;
+  \item \emph{Hardening OpenSSH} (guide de l'IETF) pour le durcissement
+        \texttt{sshd\_config} côté serveur ;
+  \item Mosh (\url{https://mosh.org/}) : le papier et l'implémentation ;
+  \item l'option \texttt{PermitTunnel} de \texttt{sshd\_config} (tunnel TAP, pour du
+        véritable VPN sur SSH) — à connaître, rarement à utiliser.
+\end{itemize}
+
+\end{document}

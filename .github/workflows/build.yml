@@ -1,0 +1,71 @@
+name: Build and verify LaTeX
+
+# Déclenché sur toute pull request et sur toute poussée vers main.
+# Le job "compile" est le check obligatoire protégé sur main :
+# une PR ne peut être fusionnée que s'il est vert.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  compile:
+    name: compile (LaTeX)
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install TeXLive and Pygments
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            latexmk \
+            texlive-latex-base \
+            texlive-latex-recommended \
+            texlive-latex-extra \
+            texlive-fonts-recommended \
+            texlive-fonts-extra \
+            texlive-lang-french \
+            python3-pygments
+          pygmentize --version
+
+      - name: Verify the document is self-contained
+        run: |
+          if grep -nE '^[^%]*\\(input|include|import|subfile)\{' ssh-indep.tex; then
+            echo "::error::ssh-indep.tex dépend d'un fichier externe : le document doit rester autonome."
+            exit 1
+          fi
+          echo "Autonomie vérifiée : aucune dépendance externe."
+
+      - name: Compile with latexmk (shell-escape for minted)
+        run: |
+          latexmk -pdf -shell-escape -halt-on-error \
+                  -interaction=nonstopmode \
+                  ssh-indep.tex
+
+      - name: Fail if the PDF was not produced
+        run: |
+          test -s ssh-indep.pdf || { echo "::error::ssh-indep.pdf absent ou vide"; exit 1; }
+          ls -l ssh-indep.pdf
+
+      - name: Check for fatal LaTeX errors in the log
+        run: |
+          if grep -nE '^! ' ssh-indep.log; then
+            echo "::error::erreurs LaTeX détectées dans ssh-indep.log"
+            exit 1
+          fi
+          echo "Compilation sans erreur fatale."
+
+      - name: Upload the compiled PDF
+        uses: actions/upload-artifact@v4
+        with:
+          name: ssh-indep-pdf
+          path: ssh-indep.pdf
+          if-no-files-found: error

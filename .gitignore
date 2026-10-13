@@ -1,0 +1,35 @@
+## Fichiers auxiliaires LaTeX
+*.aux
+*.log
+*.out
+*.toc
+*.lof
+*.lot
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.synctex.gz(busy)
+*.bbl
+*.blg
+*.run.xml
+*.bcf
+*.nav
+*.snm
+*.vrb
+*.spl
+*.idx
+*.ind
+*.xdv
+*.w18
+*.aex
+*.pyg
+
+## minted
+_minted*/
+
+## PDF générés (le PDF est produit par la CI, pas versionné)
+*.pdf
+
+## Éditeurs
+.vscode/
+*.swp
