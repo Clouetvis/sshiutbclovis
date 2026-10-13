@@ -32,9 +32,20 @@ jobs:
             texlive-latex-extra \
             texlive-fonts-recommended \
             texlive-fonts-extra \
+            cm-super \
             texlive-lang-french \
             python3-pygments
           pygmentize -V
+
+      # minted2.sty n'existe que dans TeXLive Debian ; il est embarqué dans le
+      # dépôt (licence LPPL, cf. en-tête du fichier) pour que la compilation
+      # fonctionne aussi sur Ubuntu, où seul minted (v3) est disponible.
+      # cm-super fournit les polices Type1 scalables T1 requises par
+      # fontfamily=helvetica + microtype (auto-expansion).
+      - name: Verify bundled minted2.sty
+        run: |
+          test -s minted2.sty || { echo "::error::minted2.sty embarqué absent"; exit 1; }
+          ls -l minted2.sty
 
       - name: Verify the document is self-contained
         run: |

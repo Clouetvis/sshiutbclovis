@@ -24,6 +24,10 @@ via Pygments), qui appelle `pygmentize` depuis LaTeX.
 Dépendances : TeXLive (classe `exam`, `minted2`, `babel` français, `hyperref`,
 `microtype`, `xcolor`, `listings`, `enumitem`, `parskip`) et `pygments`.
 
+`minted2.sty` (version Debian, licence LPPL) est **embarqué dans le dépôt** : il n'existe
+que dans TeXLive Debian, pas dans TeXLive amont ni Ubuntu. LaTeX le trouve dans le
+dossier courant, ce qui rend la compilation identique partout.
+
 Sous Debian :
 
 ```bash
@@ -46,6 +50,7 @@ est bloqué.
 | Fichier | Rôle |
 |---|---|
 | `ssh-indep.tex` | le TP, autonome (préambule inline) |
+| `minted2.sty` | variante Debian de `minted`, embarquée (licence LPPL) |
 | `Makefile` | compilation locale |
 | `.github/workflows/build.yml` | vérification de compilation sur chaque PR |
 
