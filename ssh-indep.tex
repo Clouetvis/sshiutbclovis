@@ -748,6 +748,31 @@ n'est pas copiée, mais elle est \emph{utilisable} depuis le saut.
 (saut puis cible) ; le saut ne voit qu'un flux TCP brut qu'il transite (\texttt{-W}).
 Aucune clé ne passe sur le saut, aucune variable d'agent n'y est exposée.
 \end{solution}
+
+\question \textbf{Déployer la clé de la cible en passant par le bastion} : la cible
+n'est joignable \emph{que} depuis le bastion. Comment envoyer votre clé publique sur la
+cible avec \texttt{ssh-copy-id}, sans vous connecter manuellement sur le bastion puis de
+la cible ?
+\begin{solution}
+\texttt{ssh-copy-id} accepte les options de \texttt{ssh} via \texttt{-o}, donc le saut
+fonctionne exactement comme pour \texttt{ssh} :
+
+\begin{bashcode}
+ssh-copy-id -i ~/.ssh/id_ed25519_cible.pub -o "ProxyJump=bastion" root@10.99.0.11
+\end{bashcode}
+
+\texttt{ProxyJump=bastion} réutilise l'alias \texttt{Host bastion} du
+\texttt{\textasciitilde/.ssh/config} (\texttt{127.0.0.1:2222}). On peut aussi l'écrire en
+toutes lettres : \texttt{-o "ProxyJump=root@127.0.0.1:2222"}.
+
+Le saut ne fait que transiter un flux TCP chiffré vers \texttt{10.99.0.11:22} : la clé
+publique est déposée sur la cible, jamais sur le bastion.
+
+\textbf{Variante plus courte} : si \texttt{Host cible} contient déjà
+\texttt{ProxyJump bastion}, un simple \texttt{ssh-copy-id -i
+\textasciitilde/.ssh/id\_ed25519\_cible.pub cible} suffit.
+\end{solution}
+
 \question \textbf{Ancienne syntaxe} : connectez-vous à la cible avec
 \texttt{ssh -o "ProxyCommand=ssh bastion -W \%h:\%p" 10.99.0.11}. Qui exécute quoi sur
 le bastion ? Que fait exactement \texttt{-W hôte:port} ?
