@@ -580,9 +580,10 @@ ssh-add -l          # la clé a disparu de la liste, il faudra re-ssh-add
 \texttt{-t} prend une durée en secondes. Utile sur un poste partagé ou en salle de travaux
 pratiques : la clé quitte la mémoire de l'agent toute seule.
 \end{solution}
-\question Si votre poste de travail est \textbf{Windows} (client OpenSSH natif) : le service
-\texttt{ssh-agent} joue le même rôle. Quelles commandes PowerShell vérifient le service et
-chargent une clé ?
+\question Les postes de l'IUT sont sous Linux : cette question se traite \emph{sans
+machine Windows}. Si votre poste de travail avait été sous \textbf{Windows} (client
+OpenSSH natif), le service \texttt{ssh-agent} y aurait joué le même rôle. Quelles
+commandes PowerShell auriez-vous utilisées pour vérifier le service et charger une clé ?
 \begin{solution}
 \begin{bashcode}
 Get-Service ssh-agent
