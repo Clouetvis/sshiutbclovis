@@ -876,20 +876,25 @@ standard pour les bases, l'UI de gestion, l'API interne.
 \question \textbf{Tunnel distant} : sur votre \emph{hôte}, lancez
 \texttt{python3 -m http.server 3000} dans un répertoire contenant un fichier
 \texttt{marqueur.html}. Depuis l'hôte, ouvrez
-\texttt{ssh -R 8080:127.0.0.1:3000 cible}, puis depuis \emph{la cible}
-\texttt{curl 127.0.0.1:8080}. Qui écoute où cette fois ?
+\texttt{ssh -R 8081:127.0.0.1:3000 cible}, puis depuis \emph{la cible}
+\texttt{curl 127.0.0.1:8081}. Qui écoute où cette fois ? (Pourquoi pas le port 8080 ?)
 \begin{solution}
 \begin{bashcode}
 # sur l'hôte :
 mkdir -p /tmp/www && echo "MARQUEUR DEPUIS L'HOTE" > /tmp/www/marqueur.html
 cd /tmp/www && python3 -m http.server 3000 &
-ssh -R 8080:127.0.0.1:3000 cible
+ssh -R 8081:127.0.0.1:3000 cible
 # sur la cible :
-curl 127.0.0.1:8080/marqueur.html
+curl 127.0.0.1:8081/marqueur.html
 # MARQUEUR DEPUIS L'HOTE
 \end{bashcode}
 Symétrique du local : c'est le \textbf{daemon \texttt{sshd} de la cible} qui écoute sur
-\texttt{127.0.0.1:8080} et renvoie le flux vers \texttt{127.0.0.1:3000} \emph{de l'hôte}.
+\texttt{127.0.0.1:8081} et renvoie le flux vers \texttt{127.0.0.1:3000} \emph{de l'hôte}.
+Pourquoi pas 8080 : ce port est déjà pris par le service interne de la question~1. Avec
+\texttt{-R 8080}, \texttt{sshd} n'obtient que \texttt{[::1]:8080} et ssh n'affiche
+\emph{aucune} erreur ; \texttt{curl 127.0.0.1:8080} interroge alors le service de la
+cible, pas le tunnel (vérifiable avec \texttt{ss -ltn} sur la cible). Un écouteur
+\texttt{-R} doit toujours viser un port \emph{libre} sur le serveur.
 Usages typiques : exposer à distance un service qui tourne sur votre poste (Jupyter, un
 dashboard, un outil de debug), ou recevoir le trafic d'un serveur qui ne peut pas sortir.
 \end{solution}
