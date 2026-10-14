@@ -1350,4 +1350,219 @@ Host lab
         véritable VPN sur SSH) — à connaître, rarement à utiliser.
 \end{itemize}
 
+\section{Hardening SSH}\label{hardening-ssh}
+
+Pour chacune des questions, indiquer les fichiers modifiés, les
+configurations et commandes réalisées. Ne pas hésiter à utiliser
+\texttt{man\ sshd\_config} et \texttt{man\ ssh }, et fournir des captures d'écran.
+
+\begin{questions}
+\question Modifier le port d'écoute de SSH du bastion sur 20222, puis tester la
+  connexion depuis votre hôte. Quel est l'avantage de cette manipulation
+  si la machine est exposée sur internet (en DMZ par exemple) ? Quelle
+  en est la limite ?
+
+\begin{solution}
+\emph{Changer le port permet de réduire le bruit des bots qui
+scannent massivement le port 22 sur internet. L'avantage
+principal, c'est qu'il y aura moins de
+tentatives de connexion donc moins de logs liés au flood. La mesure ne
+protège pas du bruteforce par exemple. En complément, il est possible
+d'autoriser uniquement l'authentification par clé ou un
+mécanisme comme Fail2ban.}
+
+Modifications à réaliser :
+
+\begin{bashcode}
+sudo -i
+nano /etc/ssh/sshd_config
+\end{bashcode}
+
+Remplacer :
+
+\begin{bashcode}
+# Port 22
+Port 20222
+\end{bashcode}
+
+Puis :
+
+\begin{bashcode}
+sudo -i
+systemctl reload ssh
+\end{bashcode}
+
+Depuis votre hôte, modifier l'alias du bastion :
+
+\begin{bashcode}
+  Host bastion
+      HostName 10.99.0.10
+      Port 20222
+\end{bashcode}
+
+Tester la connexion :
+
+\begin{bashcode}
+ssh bastion
+\end{bashcode}
+
+\end{solution}
+
+\question Modifier le fichier de configuration du démon SSH pour
+  n'autoriser la connexion qu'aux
+  utilisateurs "test" et "test2". Quelle serait la démarche pour refuser
+  la connexion à un groupe ?
+
+
+
+\begin{solution}
+Afin d'autoriser la connexion qu'à
+l'utilisateur "test" et "test2", il faut ajouter la
+configuration suivante dans le fichier \texttt{/etc/ssh/sshd\_config} :
+
+\begin{bashcode}
+AllowUsers test test2
+\end{bashcode}
+
+Pour refuser un groupe, la directive est :
+
+\begin{bashcode}
+DenyGroups grp-exemple
+\end{bashcode}
+
+Puis :
+
+\begin{bashcode}
+systemctl reload ssh
+\end{bashcode}
+
+\end{solution}
+
+\question Que se passe-t-il si les directives AllowUsers et AllowGroups
+  coexistent dans le fichier de configuration sshd ? (Réaliser la
+  manipulation en créant le groupe "grp-adm" et
+  l'utilisateur "test2")
+
+\begin{solution}
+Si les deux directives coexistent,
+
+\begin{bashcode}
+sudo -i
+adduser test2
+groupadd grp-adm
+usermod -aG grp-adm test2
+\end{bashcode}
+
+Modifier le fichier de configuration \texttt{/etc/ssh/sshd\_config} et
+ajouter :
+
+\begin{bashcode}
+AllowGroups grp-adm
+\end{bashcode}
+
+Depuis une autre machine, tester avec les deux utilisateurs la connexion
+:
+
+\begin{bashcode}
+ssh -p 20222 test@10.99.0.10 # refusée
+\end{bashcode}
+
+\begin{bashcode}
+ssh -p 20222 test2@10.99.0.10 # ok
+\end{bashcode}
+
+\end{solution}
+
+\question Générer une paire de clés SSH ed25519 pour
+  l'utilisateur test2 et ajouter la clé SSH publique de
+  test2 au bastion (\texttt{ssh-copy-id}). Modifier la configuration du
+  démon SSH pour n'autoriser que
+  l'authentification par clé et refuser
+  l'authentification sur l'utilisateur
+  root.
+
+\begin{solution}
+\begin{bashcode}
+ssh-keygen -t ed25519 -C "test2@poste" -f ~/.ssh/id_ed25519_test2
+ssh-copy-id -i ~/.ssh/id_ed25519_test2.pub -p 20222 test2@10.99.0.10
+\end{bashcode}
+
+Modifier le fichier de configuration :
+
+\begin{bashcode}
+sudo -i
+nano /etc/ssh/sshd_config
+\end{bashcode}
+
+Ajouter ces directives :
+
+\begin{bashcode}
+PasswordAuthentication no
+PermitRootLogin no
+\end{bashcode}
+
+Puis : 
+
+\begin{bashcode}
+sudo systemctl reload ssh
+\end{bashcode}
+
+En bonus, il est possible de désactiver
+l'authentification interactive :
+
+\begin{bashcode}
+KbdInteractiveAuthentication no
+\end{bashcode}
+\end{solution}
+
+\question \emph{Un bastion ne doit pas permettre la connexion à
+n'importe quelle machine.
+L'administrateur système doit choisir quel groupe
+d'utilisateurs peut accéder à quelle machine.}
+
+  Limiter l'accès aux machines \texttt{10.99.0.110} et
+  \texttt{10.99.0.111} pour tous les utilisateurs du groupe
+  "grp-rebond" (Créer le groupe si nécessaire)
+
+\begin{solution}
+Modifier le fichier de configuration :
+
+\begin{bashcode}
+sudo -i
+groupadd grp-rebond
+usermod -aG grp-rebond test2
+\end{bashcode}
+
+\begin{bashcode}
+Match Group grp-rebond
+    AllowTcpForwarding local
+    PermitOpen 10.99.0.110:22 10.99.0.111:22
+\end{bashcode}
+
+Depuis votre hôte, modifier l'alias du bastion :
+
+\begin{bashcode}
+  Host bastion
+      HostName 10.99.0.10
+      Port 20222
+      User test2
+      IdentityFile ~/.ssh/id_ed25519_test2
+\end{bashcode}
+
+Puis :
+
+\begin{bashcode}
+systemctl reload ssh
+\end{bashcode}
+
+Résultat :
+
+\begin{bashcode}
+ssh -J bastion test2@10.99.0.110   # ok
+ssh -J bastion test2@10.99.0.11 # refusée
+\end{bashcode}
+\end{solution}
+\end{questions}
+
+
 \end{document}
