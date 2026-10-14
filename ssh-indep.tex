@@ -898,17 +898,18 @@ dashboard, un outil de debug), ou recevoir le trafic d'un serveur qui ne peut pa
 être configuré ainsi ?
 \begin{solution}
 \begin{itemize}
-  \item \texttt{AllowTcpForwarding yes} (défaut) : autorise les tunnels \emph{locaux}
-        (\texttt{-L}) depuis les clients.
-  \item \texttt{AllowTcpForwarding no} : refuse les tunnels \texttt{-R} \emph{demandés
-        par le client distant} (le client local \texttt{-L} est quand même possible ;
-        c'est \texttt{PermitTunnel} et les règles \texttt{Match} qui affinent).
+  \item \texttt{AllowTcpForwarding yes} (défaut) : autorise \emph{tous} les tunnels
+        (\texttt{-L}, \texttt{-R}, \texttt{-D}). Valeurs : \texttt{yes} (ou \texttt{all}),
+        \texttt{local} (\texttt{-L} seul), \texttt{remote} (\texttt{-R} seul), \texttt{no}.
+  \item \texttt{AllowTcpForwarding no} : refuse \emph{toutes} les redirections TCP,
+        \texttt{-L} compris, et aussi \texttt{ProxyJump} (qui repose sur \texttt{-W}).
         Sur un bastion « kiosque » (accès shell only, pas de tunnel),
         \texttt{AllowTcpForwarding no} empêche d'utiliser le bastion comme relais pour
         contourner le réseau.
   \item \texttt{GatewayPorts no} (défaut) : les écouteurs \texttt{-R} ne se bindent que sur
-        la boucle de la machine distante. \texttt{GatewayPorts clients/all} autoriserait
-        le bind sur d'autres interfaces : à réserver à des cas très encadrés.
+        la boucle de la machine distante. \texttt{GatewayPorts yes} ou
+        \texttt{clientspecified} autoriserait le bind sur d'autres interfaces : à réserver
+        à des cas très encadrés.
 \end{itemize}
 \end{solution}
 \question \textbf{Tunnel dynamique} : ouvrez \texttt{ssh -N -D 1080 cible} puis depuis
