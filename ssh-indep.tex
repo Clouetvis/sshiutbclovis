@@ -1443,6 +1443,161 @@ Host lab
 \end{solution}
 \end{questions}
 
+\section{Exercice de synthèse : donner un accès à un prestataire}
+
+\textbf{Objectif.} Refaire un cas qu'on rencontre vraiment en entreprise : on donne un
+accès limité à quelqu'un d'extérieur, puis on le retire. Ça reprend les points les plus
+utiles du TP (clés, bastion, tunnel, multiplexage, journaux).
+
+Un prestataire doit intervenir une semaine sur le serveur interne \texttt{10.99.0.11}.
+Vous gérez le bastion. Il doit pouvoir seulement passer par le bastion pour atteindre ce
+serveur, sans shell sur le bastion et sans clé déposée dessus.
+
+\begin{questions}
+\question Créez pour lui une clé ed25519 avec une phrase de passe et le commentaire
+\texttt{presta-2026}. Notez son empreinte, elle servira dans les journaux.
+\begin{solution}
+\begin{bashcode}
+ssh-keygen -t ed25519 -f ~/.ssh/id_presta -C "presta-2026"
+ssh-keygen -lf ~/.ssh/id_presta.pub
+# 256 SHA256:... presta-2026 (ED25519)
+\end{bashcode}
+L'empreinte identifie la clé : on la retrouvera dans les journaux et dans
+\texttt{authorized\_keys}.
+\end{solution}
+\question \textbf{Restriction.} Quelles options de \texttt{authorized\_keys} permettent de
+limiter sa clé au rebond vers \texttt{10.99.0.11:22}, sans shell sur le bastion ?
+Déposez la clé avec ces options et vérifiez qu'avec cette clé une commande lancée sur le
+bastion (par exemple \texttt{hostname}) ne donne rien, alors que le passage vers la cible
+marche.
+\begin{solution}
+Ligne ajoutée dans \texttt{authorized\_keys} du bastion (sur une seule ligne) :
+\begin{bashcode}
+restrict,port-forwarding,permitopen="10.99.0.11:22",command="/bin/false" ssh-ed25519 AAAA... presta-2026
+\end{bashcode}
+\texttt{restrict} coupe tout par défaut (terminal, agent, X11, tunnels).
+\texttt{port-forwarding} remet seulement les tunnels TCP, \texttt{permitopen} limite leur
+destination au port SSH de la cible, et \texttt{command="/bin/false"} empêche d'avoir un
+shell. La clé du prestataire est aussi déposée sur la cible, sans restriction.
+\begin{bashcode}
+ssh -i ~/.ssh/id_presta -p 2222 root@127.0.0.1 hostname; echo "code=$?"
+# rien d'affiché, code=1
+
+# le rebond autorisé marche, le rebond ailleurs est refusé
+ssh -i ~/.ssh/id_presta -p 2222 -W 10.99.0.11:22 root@127.0.0.1   # la bannière de la cible arrive
+ssh -i ~/.ssh/id_presta -p 2222 -W 10.99.0.11:8080 root@127.0.0.1
+# channel 0: open failed: administratively prohibited: open failed
+# stdio forwarding failed
+\end{bashcode}
+\texttt{permitopen} borne donc aussi le \texttt{-W} que \texttt{ProxyJump} utilise en
+interne : un \texttt{ProxyJump} vers une autre destination échoue au même endroit.
+\end{solution}
+\question Écrivez son bloc \texttt{\textasciitilde/.ssh/config} avec l'alias
+\texttt{presta}, le passage par le bastion et sa clé uniquement. Contrôlez le résultat
+avec \texttt{ssh -G presta}.
+\begin{solution}
+\begin{bashcode}
+Host bastion-presta
+    HostName 127.0.0.1
+    Port 2222
+    User root
+    IdentityFile ~/.ssh/id_presta
+    IdentitiesOnly yes
+
+Host presta
+    HostName 10.99.0.11
+    User root
+    IdentityFile ~/.ssh/id_presta
+    IdentitiesOnly yes
+    ProxyJump bastion-presta
+\end{bashcode}
+\texttt{IdentitiesOnly yes} évite que ssh essaie d'autres clés de l'agent.
+\texttt{ssh -G presta} doit montrer le bon \texttt{identityfile} et le \texttt{proxyjump}.
+\end{solution}
+\question Piège : pourquoi ne pas utiliser \texttt{ForwardAgent} ici ? Montrez avec
+\texttt{ssh-add -l} depuis le bastion qu'aucun agent n'y est exposé.
+\begin{solution}
+Avec \texttt{ForwardAgent}, quelqu'un qui est root sur le bastion pourrait utiliser
+l'agent du prestataire pendant sa session. Avec \texttt{ProxyJump}, rien n'est exposé.
+\begin{bashcode}
+ssh bastion ssh-add -l
+# Could not open a connection to your authentication agent.
+\end{bashcode}
+La commande est lancée avec l'accès de l'admin : la clé du prestataire, elle, ne permet
+pas de commande sur le bastion.
+\end{solution}
+\question Il doit consulter l'interface web de la cible (port 8080). Ouvrez un tunnel
+\texttt{-L} en arrière-plan et regardez avec \texttt{ss -ltnp} sur quelle adresse il
+écoute. Que se passe-t-il s'il essaie un autre port ou une autre machine ?
+\begin{solution}
+\begin{bashcode}
+ssh -fN -L 18080:127.0.0.1:8080 presta
+ss -ltnp | grep 18080
+# LISTEN ... 127.0.0.1:18080 ... users:(("ssh",pid=...))
+curl http://127.0.0.1:18080/
+\end{bashcode}
+Le tunnel écoute seulement sur l'interface locale (\texttt{127.0.0.1} et \texttt{::1}), donc lui seul peut l'utiliser. Il passe
+par la cible, qui n'a pas de restriction. Si le prestataire demande au bastion un tunnel
+vers autre chose que \texttt{10.99.0.11:22}, la demande est refusée par le bastion. Le
+message n'apparaît qu'au moment où l'on essaie réellement d'utiliser le tunnel, donc dans
+le terminal où \texttt{ssh} tourne en avant-plan (\texttt{-N} sans \texttt{-f}), avec
+\texttt{LogLevel=INFO} :
+\begin{bashcode}
+# terminal 1
+ssh -o LogLevel=INFO -N -L 18081:10.99.0.11:8080 bastion-presta
+# terminal 2
+curl -m 3 http://127.0.0.1:18081/
+# terminal 1 : channel 2: open failed: administratively prohibited: open failed
+\end{bashcode}
+Sans \texttt{LogLevel=INFO}, le client ne montre rien : le refus ne se voit que côté
+bastion, dans ses journaux.
+\end{solution}
+\question Mettez en place le multiplexage et chronométrez 10 connexions avec et sans.
+Quel gain voyez-vous ?
+\begin{solution}
+\begin{bashcode}
+# dans ~/.ssh/config
+Host *
+    ControlMaster auto
+    ControlPath ~/.ssh/ctl-%C
+    ControlPersist 10m
+
+time (for i in $(seq 10); do ssh bastion true; done)
+time (for i in $(seq 10); do ssh -o ControlPath=none bastion true; done)
+\end{bashcode}
+Avec le multiplexage, seule la première connexion fait l'échange de clés et
+l'authentification. Les autres réutilisent le canal : dans notre labo, environ 0,014 s
+contre 0,088 s pour une connexion complète.
+\end{solution}
+\question \textbf{Départ du prestataire.} Retrouvez ses connexions dans les journaux du
+bastion grâce à l'empreinte. Retirez sa clé en la repérant par son empreinte, puis montrez
+que sa connexion est refusée. Quelle commande teste la configuration de \texttt{sshd} avant
+de la recharger ?
+\begin{solution}
+\begin{bashcode}
+# le niveau de log par defaut (INFO) suffit a afficher l'empreinte
+journalctl -u ssh | grep "Accepted publickey"
+# Accepted publickey for root ... SHA256:xxxx
+
+ssh-keygen -lf /root/.ssh/authorized_keys   # trouver la ligne de cette empreinte
+sed -i 'Nd' /root/.ssh/authorized_keys      # N = numéro de cette ligne
+
+sshd -t && systemctl reload ssh
+ssh -o PreferredAuthentications=publickey -i ~/.ssh/id_presta -p 2222 root@127.0.0.1 hostname
+# Permission denied (publickey,password)
+\end{bashcode}
+On repère la ligne par l'empreinte et pas par le commentaire, car un commentaire peut être
+modifié. \texttt{sshd -t} vérifie la configuration avant de recharger, pour éviter de se
+bloquer dehors.
+
+Piège : si le multiplexage est actif (question~6), une connexion déjà ouverte avec cette clé
+reste utilisable après la suppression de la ligne. Il faut aussi fermer le maître :
+\begin{bashcode}
+ssh -O exit -i ~/.ssh/id_presta -p 2222 root@127.0.0.1
+\end{bashcode}
+\end{solution}
+\end{questions}
+
 \section{Cheatsheet}
 
 \begin{center}
