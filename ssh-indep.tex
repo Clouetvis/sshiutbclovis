@@ -836,6 +836,68 @@ Pour \texttt{sshd} de la cible, la connexion vient de \texttt{10.99.0.10} : le b
 C'est le modèle classique de journalisation d'un bastion (le bastion doit conserver ses
 propres journaux pour rattacher « qui, depuis l'extérieur » à « quelle connexion interne »).
 \end{solution}
+\question \textbf{Bastion web avec Apache Guacamole.} Déployez Apache Guacamole sur le
+bastion avec la méthode retenue pour votre environnement. Identifiez au minimum
+l'application web, \texttt{guacd} et le mécanisme d'authentification utilisé, et consignez
+les commandes réellement exécutées. Depuis le navigateur du poste client, vérifiez que
+l'interface est accessible, puis créez dans Guacamole une connexion SSH nommée
+\texttt{cible}. Le nom configuré doit être résolu depuis le serveur Guacamole, et non
+depuis le navigateur.
+
+Vérifiez que le poste client ne peut pas ouvrir directement une session SSH vers la cible,
+mais qu'une session s'ouvre depuis l'interface Guacamole. Dans cette session, identifiez
+l'origine de la connexion vue par la cible :
+\begin{bashcode}
+ss -tn state established | grep ':22'
+journalctl -u ssh --since '5 minutes ago'
+\end{bashcode}
+
+Sur la cible, créez ensuite \texttt{/etc/ssh/banner} :
+\begin{bashcode}
+cat > /etc/ssh/banner <<'EOF'
+ATTENTION
+
+L'accès à ce système est réservé aux utilisateurs autorisés.
+Toute tentative d'accès non autorisée peut être enregistrée et faire
+l'objet de poursuites conformément à la législation applicable.
+EOF
+\end{bashcode}
+Ajoutez la directive suivante à \texttt{/etc/ssh/sshd\_config} :
+\begin{bashcode}
+Banner /etc/ssh/banner
+\end{bashcode}
+Validez la configuration avant de recharger le service Debian :
+\begin{bashcode}
+sshd -t
+systemctl reload ssh
+\end{bashcode}
+Fermez la session Guacamole, ouvrez-en une nouvelle et vérifiez que l'avertissement
+apparaît avant l'authentification.
+
+Répondez enfin aux questions suivantes : pourquoi Apache Guacamole peut-il être considéré
+comme un bastion ? Quelle machine établit réellement la connexion SSH vers la cible ?
+Quelle différence fondamentale existe entre Guacamole et \texttt{ProxyJump} ? Pourquoi
+est-il préférable de ne pas exposer directement SSH de la cible au poste utilisateur ?
+À quoi sert la directive \texttt{Banner}, à quel moment son contenu est-il affiché, et
+pourquoi faut-il exécuter \texttt{sshd -t} avant de recharger le service ?
+\begin{solution}
+Le navigateur échange avec l'application web Apache Guacamole. Celle-ci transmet la
+session à \texttt{guacd}, qui devient le client SSH et ouvre la connexion vers la cible.
+La cible voit donc comme origine l'adresse par laquelle le serveur Guacamole atteint son
+réseau, généralement celle du bastion ; aucune connexion SSH directe entre le poste client
+et la cible n'est nécessaire. La commande \texttt{ss} montre l'adresse et le port du pair,
+et le journal SSH permet de les rapprocher de l'authentification observée.
+
+Avec \texttt{ProxyJump}, le client SSH local pilote la connexion et le bastion sert
+principalement de relais réseau. Avec Guacamole, l'utilisateur passe par une interface web
+et le service Guacamole centralise les connexions. Ne pas exposer directement SSH de la
+cible réduit sa surface d'attaque et concentre le contrôle des accès sur le bastion.
+
+La directive \texttt{Banner} demande à \texttt{sshd} d'afficher un avertissement avant
+l'authentification. \texttt{sshd -t} vérifie la syntaxe et les options de la configuration
+avant son rechargement ; cette vérification réduit le risque de rendre le serveur
+inaccessible à cause d'une erreur.
+\end{solution}
 \end{questions}
 
 \section{Tunnels : du forwarding à la demande}
